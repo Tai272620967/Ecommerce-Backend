@@ -79,10 +79,6 @@ resource "aws_ecs_task_definition" "api" {
         user              = "django-user"
         environment = [
           {
-            name  = "DJANGO_SECRET_KEY"
-            value = var.django_secret_key
-          },
-          {
             name  = "DB_HOST"
             value = aws_db_instance.main.address
           },
