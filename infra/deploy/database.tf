@@ -21,8 +21,8 @@ resource "aws_security_group" "rds" {
 
   ingress {
     protocol  = "tcp"
-    from_port = 5432
-    to_port   = 5432
+    from_port = 3306
+    to_port   = 3306
 
     security_groups = [
       aws_security_group.ecs_service.id
@@ -36,13 +36,12 @@ resource "aws_security_group" "rds" {
 
 resource "aws_db_instance" "main" {
   identifier                 = "${local.prefix}-db"
-  db_name                    = "recipe"
+  db_name                    = "muji"
   allocated_storage          = 20
   storage_type               = "gp2"
-  engine                     = "postgres"
-  engine_version             = "16.3"
-  auto_minor_version_upgrade = true
-  instance_class             = "db.t4g.micro"
+  engine                     = "mysql"
+  engine_version             = "8.0.36"
+  instance_class             = "db.t3.micro" # Free tier option
   username                   = var.db_username
   password                   = var.db_password
   skip_final_snapshot        = true
