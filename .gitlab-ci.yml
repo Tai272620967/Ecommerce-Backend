@@ -11,7 +11,7 @@ before_script:
 stages:
   - Test and Lint
   - Build and Push
-  # - Deploy
+  - Deploy
   # - Destroy
 
 Terraform Checks:
