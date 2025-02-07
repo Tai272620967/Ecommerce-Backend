@@ -35,20 +35,20 @@ resource "aws_security_group" "rds" {
 }
 
 resource "aws_db_instance" "main" {
-  identifier                 = "${local.prefix}-db"
-  db_name                    = "muji"
-  allocated_storage          = 20
-  storage_type               = "gp2"
-  engine                     = "mysql"
-  engine_version             = "8.0.36"
-  instance_class             = "db.t3.micro" # Free tier option
-  username                   = var.db_username
-  password                   = var.db_password
-  skip_final_snapshot        = true
-  db_subnet_group_name       = aws_db_subnet_group.main.name
-  multi_az                   = false
-  backup_retention_period    = 0
-  vpc_security_group_ids     = [aws_security_group.rds.id]
+  identifier              = "${local.prefix}-db"
+  db_name                 = "muji"
+  allocated_storage       = 20
+  storage_type            = "gp2"
+  engine                  = "mysql"
+  engine_version          = "8.0.36"
+  instance_class          = "db.t3.micro" # Free tier option
+  username                = var.db_username
+  password                = var.db_password
+  skip_final_snapshot     = true
+  db_subnet_group_name    = aws_db_subnet_group.main.name
+  multi_az                = false
+  backup_retention_period = 0
+  vpc_security_group_ids  = [aws_security_group.rds.id]
 
   tags = {
     Name = "${local.prefix}-main"
