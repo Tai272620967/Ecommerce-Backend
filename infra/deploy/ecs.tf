@@ -2,7 +2,6 @@
 # ECS Cluster for running app on Fargate.
 ##
 
-
 ##
 # Tạo IAM Role cho ECS Task Execution để ECS có thể lấy image từ ECR và ghi logs.
 ##
@@ -98,13 +97,6 @@ resource "aws_ecs_task_definition" "api" {
             value = "*"
           }
         ]
-        mountPoints = [
-          {
-            readOnly      = false
-            containerPath = "/vol/web/static"
-            sourceVolume  = "static"
-          }
-        ],
         logConfiguration = {
           logDriver = "awslogs"
           options = {
@@ -113,47 +105,9 @@ resource "aws_ecs_task_definition" "api" {
             awslogs-stream-prefix = "api"
           }
         }
-      },
-      {
-        name              = "proxy"
-        image             = var.ecr_proxy_image
-        essential         = true
-        memoryReservation = 256
-        user              = "nginx"
-        portMappings = [
-          {
-            containerPort = 8080
-            hostPort      = 8080
-          }
-        ]
-        environment = [
-          {
-            name  = "APP_HOST"
-            value = "127.0.0.1"
-          }
-        ]
-        mountPoints = [
-          {
-            readOnly      = true
-            containerPath = "/vol/static"
-            sourceVolume  = "static"
-          }
-        ]
-        logConfiguration = {
-          logDriver = "awslogs"
-          options = {
-            awslogs-group         = aws_cloudwatch_log_group.ecs_task_logs.name
-            awslogs-region        = data.aws_region.current.name
-            awslogs-stream-prefix = "proxy"
-          }
-        }
       }
     ]
   )
-
-  volume {
-    name = "static"
-  }
 
   runtime_platform {
     operating_system_family = "LINUX"
