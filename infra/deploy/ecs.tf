@@ -65,7 +65,7 @@ resource "aws_ecs_task_definition" "api" {
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   cpu                      = 256
-  memory                   = 512
+  memory                   = 1024
   execution_role_arn       = aws_iam_role.task_execution_role.arn
   task_role_arn            = aws_iam_role.app_task.arn
 
@@ -76,7 +76,6 @@ resource "aws_ecs_task_definition" "api" {
         image             = var.ecr_app_image
         essential         = true
         memoryReservation = 256
-        user              = "django-user"
         environment = [
           {
             name  = "DB_HOST"
@@ -123,8 +122,8 @@ resource "aws_ecs_task_definition" "api" {
         user              = "nginx"
         portMappings = [
           {
-            containerPort = 8000
-            hostPort      = 8000
+            containerPort = 8080
+            hostPort      = 8080
           }
         ]
         environment = [
@@ -177,8 +176,8 @@ resource "aws_security_group" "ecs_service" {
 
   # RDS connectivity
   egress {
-    from_port = 5432
-    to_port   = 5432
+    from_port = 3306
+    to_port   = 3306
     protocol  = "tcp"
     cidr_blocks = [
       aws_subnet.private_a.cidr_block,
