@@ -29,3 +29,14 @@ variable "ecr_proxy_image" {
 variable "ecr_app_image" {
   description = "Path to the ECR repo with the API image"
 }
+
+variable "gitlab_ci_server_url" {
+  description = "GitLab CI/CD Server URL"
+  type        = string
+}
+
+variable "gitlab_registration_token" {
+  description = "GitLab Runner Registration Token"
+  type        = string
+  sensitive   = true
+}

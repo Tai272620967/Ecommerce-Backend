@@ -24,9 +24,11 @@ resource "aws_security_group" "rds" {
     from_port = 3306
     to_port   = 3306
 
-    security_groups = [
-      aws_security_group.ecs_service.id
-    ]
+    # security_groups = [
+    #   aws_security_group.ecs_service.id,
+    #   aws_security_group.bastion.id
+    # ]
+    cidr_blocks = ["10.1.0.0/16"]
   }
 
   tags = {

@@ -75,6 +75,13 @@ resource "aws_ecs_task_definition" "api" {
         image             = var.ecr_app_image
         essential         = true
         memoryReservation = 256
+        portMappings = [
+          {
+            containerPort = 8080
+            hostPort = 8080
+            protocol      = "tcp"
+          }
+        ]
         environment = [
           {
             name  = "DB_HOST"
@@ -116,7 +123,7 @@ resource "aws_ecs_task_definition" "api" {
 }
 
 resource "aws_security_group" "ecs_service" {
-  description = "Access rules for the ECS service."
+  description = "Access rules for the ECS service test."
   name        = "${local.prefix}-ecs-service"
   vpc_id      = aws_vpc.main.id
 
@@ -172,3 +179,53 @@ resource "aws_ecs_service" "api" {
     container_port   = 8080
   }
 }
+
+resource "aws_ecs_task_definition" "gitlab_runner" {
+  family                   = "${local.prefix}-gitlab-runner"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = 512
+  memory                   = 1024
+  execution_role_arn       = aws_iam_role.task_execution_role.arn
+  task_role_arn            = aws_iam_role.app_task.arn
+
+  container_definitions = jsonencode([
+    {
+      name  = "gitlab-runner"
+      image = "gitlab/gitlab-runner:latest"
+      essential = true
+      environment = [
+        { name = "CI_SERVER_URL", value = "${var.gitlab_ci_server_url}" },
+        { name = "REGISTRATION_TOKEN", value = "${var.gitlab_registration_token}" },
+        { name = "RUNNER_EXECUTOR", value = "docker" }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.ecs_task_logs.name
+          awslogs-region        = data.aws_region.current.name
+          awslogs-stream-prefix = "gitlab-runner"
+        }
+      }
+    }
+  ])
+
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "X86_64"
+  }
+}
+
+resource "aws_ecs_service" "gitlab_runner" {
+  name            = "${local.prefix}-gitlab-runner"
+  cluster         = aws_ecs_cluster.main.name
+  task_definition = aws_ecs_task_definition.gitlab_runner.family
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets = [aws_subnet.public_a.id, aws_subnet.public_b.id]
+    security_groups = [aws_security_group.ecs_service.id]
+  }
+}
+
