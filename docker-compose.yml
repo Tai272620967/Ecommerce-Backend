@@ -1,0 +1,58 @@
+services:
+  # MySQL Database Service
+  mysql:
+    image: mysql:8.0
+    container_name: muji-mysql
+    restart: unless-stopped
+    environment:
+      # Database credentials
+      # Note: MYSQL_ROOT_PASSWORD sets the root user password
+      # MYSQL_USER/MYSQL_PASSWORD are for creating regular users, not root
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: jobhunter
+    ports:
+      # Expose MySQL port to host machine (host:container)
+      # Using 3307 on host to avoid conflict with existing MySQL on 3306
+      - "3307:3306"
+    volumes:
+      # Persist database data
+      - mysql_data:/var/lib/mysql
+    networks:
+      - muji-network
+    healthcheck:
+      # Check if MySQL is ready to accept connections
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot Application Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: muji-backend
+    restart: unless-stopped
+    ports:
+      # Expose application port
+      - "8080:8080"
+    environment:
+      # Override database connection for Docker environment
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/jobhunter
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: password
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - muji-network
+
+volumes:
+  # Named volume for MySQL data persistence
+  mysql_data:
+
+networks:
+  # Custom network for services to communicate
+  muji-network:
+    driver: bridge
+
