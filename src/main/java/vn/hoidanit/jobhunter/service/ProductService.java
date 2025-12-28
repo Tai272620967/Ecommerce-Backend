@@ -118,4 +118,13 @@ public class ProductService {
     public Optional<Product> handleGetProductById(long productId) {
         return this.productRepository.findById(productId);
     }
+
+    public void handleDeleteProduct(long productId) {
+        // Check if product exists
+        Product product = this.productRepository.findById(productId)
+            .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + productId));
+        
+        // Delete the product
+        this.productRepository.delete(product);
+    }
 }
