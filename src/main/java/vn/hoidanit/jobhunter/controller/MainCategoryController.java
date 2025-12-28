@@ -2,6 +2,8 @@ package vn.hoidanit.jobhunter.controller;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,7 @@ import vn.hoidanit.jobhunter.service.MainCategoryService;
 @RestController
 @RequestMapping("/api/v1")
 public class MainCategoryController {
+    private static final Logger logger = LoggerFactory.getLogger(MainCategoryController.class);
     private final MainCategoryService mainCategoryService;
 
     public MainCategoryController( MainCategoryService mainCategoryService) {
@@ -37,6 +40,8 @@ public class MainCategoryController {
     public ResponseEntity<ResultPaginationDTO> getAllMainCategory(
         @Filter Specification<MainCategory> spec, Pageable pageable
     ) {
+        // Debug log to check if API is called
+        logger.debug("GET /api/v1/main-categories called - spec: {}, pageable: {}", spec, pageable);
         return ResponseEntity.ok(this.mainCategoryService.handleGetAllMainCategory(spec, pageable));
     }
 

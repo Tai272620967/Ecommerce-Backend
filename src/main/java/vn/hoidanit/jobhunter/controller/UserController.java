@@ -121,17 +121,17 @@ public class UserController {
         boolean isEmailExist = this.userService.isEmailExist(emailRequest.getTo());
         if (isEmailExist) {
             throw new IdInvalidException(
-                "入力されたメールアドレスは既に登録済みです。");
+                "The entered email address is already registered.");
         } else {
             try {
                 Map<String, Object> model = new HashMap<>();
-                model.put("name", "Người dùng");
+                model.put("name", "User");
                 emailService.sendHtmlEmail(emailRequest.getTo(), emailRequest.getSubject());
-                // return ResponseEntity.ok("Email đã được gửi thành công!");
-                return ResponseEntity.status(HttpStatus.OK).body(new ResVerifyEmail("メールアドレスが確認されました。コードが送信されましたので、ご確認ください。", true));
+                // return ResponseEntity.ok("Email sent successfully!");
+                return ResponseEntity.status(HttpStatus.OK).body(new ResVerifyEmail("Email address has been confirmed. A verification code has been sent, please check your email.", true));
             } catch (MessagingException e) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                    .body(new ResVerifyEmail("Lỗi khi gửi email: " + e.getMessage(), false));
+                                    .body(new ResVerifyEmail("Error sending email: " + e.getMessage(), false));
             }
         }
     }
@@ -144,23 +144,23 @@ public class UserController {
         String inputCode = verifyCodeRequest.getVerifyCode();
         System.out.println("inputCode" + inputCode);
 
-        // Kiểm tra người dùng có tồn tại hay không
+        // Check if user exists
         OtpVerification otpVerification = otpVerifycationService.handleFindByEmail(email);
-        System.out.println("otpVerification: " + otpVerification.getOtpCode());
         if (otpVerification == null) {
-            throw new IdInvalidException("Email không tồn tại.");
+            throw new IdInvalidException("Email does not exist.");
         }
+        System.out.println("otpVerification: " + otpVerification.getOtpCode());
 
-        // Kiểm tra mã xác minh và thời gian hết hạn
+        // Check verification code and expiry time
         if (otpVerification.getOtpCode() == null || !otpVerification.getOtpCode().equals(inputCode)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResVerifyOtp("確認コードが正しくありません！", false));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResVerifyOtp("The verification code is incorrect!", false));
         }
 
         if (otpVerification.getExpiryTime() != null && otpVerification.getExpiryTime().isBefore(LocalDateTime.now())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResVerifyOtp("確認コードの有効期限が切れました。", false));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResVerifyOtp("The verification code has expired.", false));
         }
         this.otpVerifycationService.handleUpdateOtpVerification(otpVerification);
         
-        return ResponseEntity.status(HttpStatus.OK).body(new ResVerifyOtp("コードの確認に成功しました！", true));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResVerifyOtp("Verification code confirmed successfully!", true));
     }
 }

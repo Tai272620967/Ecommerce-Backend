@@ -17,6 +17,8 @@ services:
     volumes:
       # Persist database data
       - mysql_data:/var/lib/mysql
+      # Mount SQL initialization scripts
+      - ./database/init:/docker-entrypoint-initdb.d
     networks:
       - muji-network
     healthcheck:
@@ -26,11 +28,72 @@ services:
       timeout: 5s
       retries: 5
 
+  # Database Initialization Service
+  # This service imports category data after MySQL is ready and tables are created
+  db-init:
+    image: mysql:8.0
+    container_name: muji-db-init
+    restart: "no"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      app:
+        condition: service_started
+    volumes:
+      # Mount SQL scripts
+      - ./database/init:/docker-entrypoint-initdb.d
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        echo "Waiting for MySQL to be ready..."
+        until mysqladmin ping -h mysql -uroot -ppassword --silent; do
+          echo "MySQL is unavailable - sleeping"
+          sleep 2
+        done
+        echo "MySQL is ready! Waiting for tables to be created..."
+        # Wait for maincategories table to be created by Spring Boot
+        MAX_RETRIES=60
+        RETRY_COUNT=0
+        while [ $$RETRY_COUNT -lt $$MAX_RETRIES ]; do
+          TABLE_EXISTS=$$(mysql -h mysql -uroot -ppassword jobhunter -sN -e "SHOW TABLES LIKE 'maincategories';" 2>/dev/null | wc -l)
+          if [ "$$TABLE_EXISTS" -eq "1" ]; then
+            echo "Tables are ready!"
+            break
+          fi
+          echo "Waiting for tables to be created... ($$RETRY_COUNT/$$MAX_RETRIES)"
+          sleep 2
+          RETRY_COUNT=$$((RETRY_COUNT + 1))
+        done
+        if [ $$RETRY_COUNT -eq $$MAX_RETRIES ]; then
+          echo "Warning: Tables not created after waiting. Proceeding anyway..."
+        fi
+        echo "Checking if data needs to be imported..."
+          EXISTING_COUNT=$$(mysql -h mysql -uroot -ppassword jobhunter -sN -e "SELECT COUNT(*) FROM maincategories;" 2>/dev/null || echo "0")
+          if [ "$$EXISTING_COUNT" -eq "0" ]; then
+            echo "No existing data found. Importing categories..."
+            mysql -h mysql -uroot -ppassword jobhunter < /docker-entrypoint-initdb.d/01-init-categories.sql
+            echo "Category data imported successfully!"
+          else
+            echo "Data already exists ($$EXISTING_COUNT main categories). Skipping import."
+          fi
+          echo "Checking if products need to be imported..."
+          PRODUCT_COUNT=$$(mysql -h mysql -uroot -ppassword jobhunter -sN -e "SELECT COUNT(*) FROM products;" 2>/dev/null || echo "0")
+          if [ "$$PRODUCT_COUNT" -eq "0" ]; then
+            echo "No products found. Importing products..."
+            mysql -h mysql -uroot -ppassword jobhunter < /docker-entrypoint-initdb.d/02-init-products.sql
+            echo "Product data imported successfully!"
+          else
+            echo "Products already exist ($$PRODUCT_COUNT products). Skipping import."
+          fi
+    networks:
+      - muji-network
+
   # Spring Boot Application Service
   app:
     build:
       context: .
       dockerfile: Dockerfile
+      target: build
     container_name: muji-backend
     restart: unless-stopped
     ports:
@@ -41,6 +104,25 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/jobhunter
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: password
+      # Enable Spring Boot DevTools for hot reload
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      SPRING_DEVTOOLS_LIVERELOAD_ENABLED: "true"
+    volumes:
+      # Mount source code for hot reload
+      - ./src:/hoidanit/jobhunter/src
+      - ./build.gradle.kts:/hoidanit/jobhunter/build.gradle.kts
+      - ./settings.gradle.kts:/hoidanit/jobhunter/settings.gradle.kts
+      - ./gradlew:/hoidanit/jobhunter/gradlew
+      - ./gradle:/hoidanit/jobhunter/gradle
+      # Mount uploads/images directory to serve static images
+      - ./uploads/images:/hoidanit/jobhunter/uploads/images
+      # Cache Gradle dependencies and wrapper distributions to speed up builds
+      - gradle_cache:/home/gradle/.gradle
+      - gradle_wrapper_cache:/home/gradle/.gradle/wrapper
+    # Override CMD to run in development mode with hot reload
+    # Use gradle command directly (already available in image) instead of wrapper to avoid download
+    # Set executable permission for gradlew (in case it's needed) and run the application
+    command: ["sh", "-c", "chmod +x /hoidanit/jobhunter/gradlew 2>/dev/null || true && gradle bootRun --no-daemon --continuous --build-cache"]
     depends_on:
       mysql:
         condition: service_healthy
@@ -50,6 +132,10 @@ services:
 volumes:
   # Named volume for MySQL data persistence
   mysql_data:
+  # Gradle cache volume for faster builds
+  gradle_cache:
+  # Gradle wrapper cache to avoid re-downloading distributions
+  gradle_wrapper_cache:
 
 networks:
   # Custom network for services to communicate
