@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +19,7 @@ import vn.hoidanit.jobhunter.domain.OrderItem;
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.request.OrderDTO;
 import vn.hoidanit.jobhunter.domain.response.ResOrderDTO;
+import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.repository.CartItemRepository;
 import vn.hoidanit.jobhunter.repository.CartRepository;
 import vn.hoidanit.jobhunter.repository.OrderItemRepository;
@@ -182,6 +186,32 @@ public class OrderService {
         Order order = orderOptional.get();
         List<OrderItem> orderItems = this.orderItemRepository.findByOrderId(order.getId());
         return convertToResOrderDTO(order, orderItems);
+    }
+
+    public ResultPaginationDTO handleGetAllOrders(Specification<Order> spec, Pageable pageable) {
+        Page<Order> pageOrder = this.orderRepository.findAll(spec, pageable);
+        ResultPaginationDTO rs = new ResultPaginationDTO();
+        ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
+
+        mt.setPage(pageOrder.getNumber() + 1);
+        mt.setPageSize(pageOrder.getSize());
+        mt.setPages(pageOrder.getTotalPages());
+        mt.setTotal(pageOrder.getTotalElements());
+
+        rs.setMeta(mt);
+
+        // Convert orders to ResOrderDTO
+        List<ResOrderDTO> listOrder = pageOrder.getContent()
+                .stream()
+                .map(order -> {
+                    List<OrderItem> orderItems = this.orderItemRepository.findByOrderId(order.getId());
+                    return convertToResOrderDTO(order, orderItems);
+                })
+                .collect(Collectors.toList());
+
+        rs.setResult(listOrder);
+
+        return rs;
     }
 
     private ResOrderDTO convertToResOrderDTO(Order order, List<OrderItem> orderItems) {

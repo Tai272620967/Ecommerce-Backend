@@ -2,12 +2,12 @@ package vn.hoidanit.jobhunter.service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.response.ResCreateUserDTO;
@@ -70,8 +70,16 @@ public class UserService {
     }
 
     public ResUserDTO convertToResUserDTO(User user) {
+        if (user == null) {
+            return null;
+        }
+        
+        // Check if user has valid ID (not 0)
+        if (user.getId() == 0) {
+            return null;
+        }
+        
         ResUserDTO res = new ResUserDTO();
-
         res.setId(user.getId());
         res.setEmail(user.getEmail());
         res.setFirstName(user.getFirstName());
@@ -86,6 +94,7 @@ public class UserService {
         res.setBirthday(user.getBirthday());
         res.setGender(user.getGender());
         res.setCreatedAt(user.getCreatedAt());
+        res.setUpdatedAt(user.getUpdatedAt());
         return res;
     }
 
@@ -109,26 +118,39 @@ public class UserService {
         return res;
     }
 
+    @Transactional(readOnly = true)
     public ResultPaginationDTO handleGetAllUser(Specification<User> spec, Pageable pageable) {
-        Page<User> pageUser = this.userRepositoty.findAll(spec, pageable);
+        // Always use findAll without specification to avoid filtering issues
+        Page<User> pageUser = this.userRepositoty.findAll(pageable);
+        
+        System.out.println("Total users in database: " + pageUser.getTotalElements());
+        System.out.println("Users in current page: " + pageUser.getContent().size());
+        
         ResultPaginationDTO rs = new ResultPaginationDTO();
         ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
-
         mt.setPage(pageUser.getNumber() + 1);
         mt.setPageSize(pageUser.getSize());
-
         mt.setPages(pageUser.getTotalPages());
         mt.setTotal(pageUser.getTotalElements());
-
         rs.setMeta(mt);
 
-        // remove sensitive data
-        List<ResUserDTO> listUser = pageUser.getContent()
-                .stream().map(item -> new ResUserDTO())
-                .collect(Collectors.toList());
+        // Convert users to DTOs
+        List<ResUserDTO> listUser = new java.util.ArrayList<>();
+        for (User user : pageUser.getContent()) {
+            if (user != null) {
+                System.out.println("Processing user - ID: " + user.getId() + ", Email: " + user.getEmail());
+                ResUserDTO dto = convertToResUserDTO(user);
+                if (dto != null) {
+                    System.out.println("Converted DTO - ID: " + dto.getId() + ", Email: " + dto.getEmail());
+                    listUser.add(dto);
+                } else {
+                    System.out.println("DTO is null for user ID: " + user.getId());
+                }
+            }
+        }
 
+        System.out.println("Final list size: " + listUser.size());
         rs.setResult(listUser);
-
         return rs;
     }
 

@@ -91,8 +91,16 @@ public class UserController {
         @Filter Specification<User> spec,
         Pageable pageable
     ) {
-
-        return ResponseEntity.status(HttpStatus.OK).body(this.userService.handleGetAllUser(spec, pageable));
+        System.out.println("=== UserController.getAllUser called ===");
+        System.out.println("Spec: " + spec);
+        System.out.println("Pageable: " + pageable);
+        
+        ResultPaginationDTO result = this.userService.handleGetAllUser(spec, pageable);
+        
+        System.out.println("Result from service - Total: " + (result.getMeta() != null ? result.getMeta().getTotal() : "null"));
+        System.out.println("Result list size: " + (result.getResult() != null ? ((java.util.List<?>) result.getResult()).size() : "null"));
+        
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     @GetMapping("/users/{id}")
