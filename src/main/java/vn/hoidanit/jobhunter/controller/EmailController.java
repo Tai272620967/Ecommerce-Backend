@@ -27,10 +27,10 @@ public class EmailController {
             model.put("name", "Người dùng");
 
             emailService.sendHtmlEmail(emailRequest.getTo(), emailRequest.getSubject());
-            return ResponseEntity.ok("Email đã được gửi thành công!");
+            return ResponseEntity.ok("Email sent successfully!");
         } catch (MessagingException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                 .body("Lỗi khi gửi email: " + e.getMessage());
+                                 .body("Error sending email: " + e.getMessage());
         }
     }
 }

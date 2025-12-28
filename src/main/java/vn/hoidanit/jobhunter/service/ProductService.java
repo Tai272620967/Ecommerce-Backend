@@ -2,7 +2,6 @@ package vn.hoidanit.jobhunter.service;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -18,11 +17,6 @@ import vn.hoidanit.jobhunter.domain.request.ProductDTO;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.repository.CategoryRepository;
 import vn.hoidanit.jobhunter.repository.ProductRepository;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.UUID;
 
 @Service
 public class ProductService {
@@ -63,10 +57,10 @@ public class ProductService {
         }
 
         // create a directory if not exist
-        this.fileService.createDirectory(baseURI + "images");
+        this.fileService.createDirectory(baseURI + "uploads/images");
 
         // store file
-        String finalName = this.fileService.store(imageFile, "images");
+        String finalName = this.fileService.store(imageFile, "uploads/images");
 
         // Path uploadPath = Paths.get(basePath, "images");
 
@@ -82,9 +76,8 @@ public class ProductService {
         // // Lưu file lên server
         // Files.copy(imageFile.getInputStream(), filePath);
 
-        // Trả về đường dẫn URL (không bao gồm `base-path` để phục vụ ảnh qua HTTP)
-        // return "/uploads/images/" + fileName;
-        return "/images/" + finalName;
+        // Trả về đường dẫn URL để phục vụ ảnh qua HTTP endpoint /uploads/images/**
+        return "/uploads/images/" + finalName;
     }
 
     public ResultPaginationDTO handleGetAllProduct(Specification<Product> spec, Pageable pageable) {

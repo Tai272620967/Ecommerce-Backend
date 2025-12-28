@@ -1,0 +1,51 @@
+package vn.hoidanit.jobhunter.controller;
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
+import vn.hoidanit.jobhunter.domain.request.OrderDTO;
+import vn.hoidanit.jobhunter.domain.response.ResOrderDTO;
+import vn.hoidanit.jobhunter.service.OrderService;
+import vn.hoidanit.jobhunter.util.anotation.ApiMessage;
+
+@RestController
+@RequestMapping("/api/v1")
+public class OrderController {
+
+    private final OrderService orderService;
+
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
+    }
+
+    @PostMapping("/orders")
+    @ApiMessage("Create a new order")
+    public ResponseEntity<ResOrderDTO> createOrder(@Valid @RequestBody OrderDTO orderDTO) {
+        ResOrderDTO createdOrder = this.orderService.handleCreateOrder(orderDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
+    }
+
+    @GetMapping("/orders")
+    @ApiMessage("Get all orders for current user")
+    public ResponseEntity<List<ResOrderDTO>> getOrders() {
+        List<ResOrderDTO> orders = this.orderService.handleGetOrdersByUserId();
+        return ResponseEntity.ok(orders);
+    }
+
+    @GetMapping("/orders/{id}")
+    @ApiMessage("Get order by id")
+    public ResponseEntity<ResOrderDTO> getOrderById(@PathVariable("id") long id) {
+        ResOrderDTO order = this.orderService.handleGetOrderById(id);
+        return ResponseEntity.ok(order);
+    }
+}
+
