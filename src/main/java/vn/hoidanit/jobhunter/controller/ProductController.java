@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -78,5 +79,11 @@ public class ProductController {
     public ResponseEntity<Product> getProductById(@PathVariable("productId") long productId) {
         Optional<Product> product = this.productService.handleGetProductById(productId);
         return ResponseEntity.ok().body(product.get());
+    }
+
+    @DeleteMapping("/products/{productId}")
+    public ResponseEntity<String> deleteProduct(@PathVariable("productId") long productId) {
+        this.productService.handleDeleteProduct(productId);
+        return ResponseEntity.ok("Product deleted successfully");
     }
 }
