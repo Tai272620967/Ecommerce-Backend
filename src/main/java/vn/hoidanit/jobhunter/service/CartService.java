@@ -81,7 +81,19 @@ public class CartService {
         // String username = authentication.getName(); // Lấy username (hoặc email)
         String email = SecurityUtil.getCurrentUserLogin().isPresent() ?
         SecurityUtil.getCurrentUserLogin().get() : "";
+        
+        // Nếu email rỗng, trả về 0 (user chưa đăng nhập)
+        if (email == null || email.isEmpty()) {
+            return new ResCartTotalQuantityDTO(0);
+        }
+        
         User currentUserDB = this.userService.handleGetUserByUsername(email);
+        
+        // Nếu user không tồn tại, trả về 0
+        if (currentUserDB == null) {
+            return new ResCartTotalQuantityDTO(0);
+        }
+        
         Optional<Cart> cartOptional = this.cartRepository.findByUserIdAndStatus(currentUserDB.getId(), "active");
         if (cartOptional.isEmpty()) {
             return new ResCartTotalQuantityDTO(0); // Giỏ hàng trống

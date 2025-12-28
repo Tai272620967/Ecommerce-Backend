@@ -2,6 +2,8 @@ package vn.hoidanit.jobhunter.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,9 +13,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.turkraft.springfilter.boot.Filter;
+
 import jakarta.validation.Valid;
+import vn.hoidanit.jobhunter.domain.Order;
 import vn.hoidanit.jobhunter.domain.request.OrderDTO;
 import vn.hoidanit.jobhunter.domain.response.ResOrderDTO;
+import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.service.OrderService;
 import vn.hoidanit.jobhunter.util.anotation.ApiMessage;
 
@@ -32,6 +38,14 @@ public class OrderController {
     public ResponseEntity<ResOrderDTO> createOrder(@Valid @RequestBody OrderDTO orderDTO) {
         ResOrderDTO createdOrder = this.orderService.handleCreateOrder(orderDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
+    }
+
+    @GetMapping(value = "/orders", params = {"page", "size"})
+    @ApiMessage("Get all orders with pagination")
+    public ResponseEntity<ResultPaginationDTO> getAllOrders(
+        @Filter Specification<Order> spec, Pageable pageable
+    ) {
+        return ResponseEntity.ok(this.orderService.handleGetAllOrders(spec, pageable));
     }
 
     @GetMapping("/orders")
