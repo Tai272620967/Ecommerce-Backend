@@ -56,28 +56,11 @@ public class ProductService {
             throw new IllegalArgumentException("Image file is required.");
         }
 
-        // create a directory if not exist
-        this.fileService.createDirectory(baseURI + "uploads/images");
+        // Store file in uploads/images/products/ directory (store method will create directory if it doesn't exist)
+        String finalName = this.fileService.store(imageFile, "uploads/images/products");
 
-        // store file
-        String finalName = this.fileService.store(imageFile, "uploads/images");
-
-        // Path uploadPath = Paths.get(basePath, "images");
-
-        // // Tạo thư mục nếu chưa tồn tại
-        // if (!Files.exists(uploadPath)) {
-        //     Files.createDirectories(uploadPath);
-        // }
-
-        // // Tạo tên file ngẫu nhiên để tránh trùng lặp
-        // String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
-        // Path filePath = uploadPath.resolve(fileName);
-
-        // // Lưu file lên server
-        // Files.copy(imageFile.getInputStream(), filePath);
-
-        // Trả về đường dẫn URL để phục vụ ảnh qua HTTP endpoint /uploads/images/**
-        return "/uploads/images/" + finalName;
+        // Return URL path to serve image via HTTP endpoint /uploads/images/products/**
+        return "/uploads/images/products/" + finalName;
     }
 
     public ResultPaginationDTO handleGetAllProduct(Specification<Product> spec, Pageable pageable) {
