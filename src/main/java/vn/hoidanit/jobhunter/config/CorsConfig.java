@@ -14,15 +14,13 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3001"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD")); // Allowed methods including HEAD for image requests
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "x-no-retry", "Range")); // Add Range header for image requests
-        configuration.setExposedHeaders(Arrays.asList("Content-Length", "Content-Range", "Accept-Ranges")); // Expose headers for image requests
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH")); // Allowed methods including OPTIONS for preflight
+        configuration.setAllowedHeaders(Arrays.asList("*")); // Allow all headers for CORS
+        configuration.setExposedHeaders(Arrays.asList("Content-Length", "Content-Range", "Accept-Ranges", "Authorization")); // Expose headers
         configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
-        // How long the response from a pre-flight request can be cached by clients
+        configuration.setMaxAge(3600L); // How long the response from a pre-flight request can be cached by clients
 
-        UrlBasedCorsConfigurationSource source = new
-        UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration); // Apply this configuration to all paths
         return source;
     }

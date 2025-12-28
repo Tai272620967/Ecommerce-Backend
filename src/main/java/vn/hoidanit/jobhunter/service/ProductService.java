@@ -64,7 +64,18 @@ public class ProductService {
     }
 
     public ResultPaginationDTO handleGetAllProduct(Specification<Product> spec, Pageable pageable) {
+        // Debug: log specification to check if filter is being applied
+        System.out.println("=== ProductService.handleGetAllProduct Debug ===");
+        System.out.println("Specification: " + (spec != null ? spec.toString() : "null"));
+        System.out.println("Pageable: page=" + pageable.getPageNumber() + ", size=" + pageable.getPageSize());
+        
         Page<Product> pageProduct = this.productRepository.findAll(spec, pageable);
+        
+        System.out.println("Total products found: " + pageProduct.getTotalElements());
+        if (pageProduct.getContent().size() > 0) {
+            System.out.println("First product name: " + pageProduct.getContent().get(0).getName());
+        }
+        
         ResultPaginationDTO rs = new ResultPaginationDTO();
         ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
 

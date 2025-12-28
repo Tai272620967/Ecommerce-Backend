@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/v1")
+@org.springframework.web.bind.annotation.CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
 public class ProductController {
     private final ProductService productService;
 
@@ -38,6 +39,11 @@ public class ProductController {
     public ResponseEntity<ResultPaginationDTO> getAllProduct(
         @Filter Specification<Product> spec, Pageable pageable
     ) {
+        // Debug: log to check if filter is received
+        System.out.println("=== ProductController.getAllProduct Debug ===");
+        System.out.println("Specification: " + (spec != null ? spec.toString() : "null"));
+        System.out.println("Pageable: page=" + pageable.getPageNumber() + ", size=" + pageable.getPageSize());
+        
         return ResponseEntity.ok(this.productService.handleGetAllProduct(spec, pageable));
     }
 

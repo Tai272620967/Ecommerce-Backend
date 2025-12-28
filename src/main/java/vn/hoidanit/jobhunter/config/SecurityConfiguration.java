@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.http.HttpMethod;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.util.Base64;
@@ -44,7 +45,8 @@ public class SecurityConfiguration {
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(
                 authz -> authz
-                    .requestMatchers("/", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/users/register", "/api/v1/users/checkRegistMailAddress", "/api/v1/users/checkVerifyCode", "/api/v1/categories/*", "/api/v1/categories/sub-category/*", "/api/v1/sub-categories",  "/api/v1/sub-categories/main-category/*", "/api/v1/sub-categories/*", "/api/v1/main-categories", "/api/v1/products", "/api/v1/products/sub-category/*", "/api/v1/products/category/*", "/api/v1/products/detail/*", "/uploads/images/**", "/storage/**").permitAll()
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow all OPTIONS requests for CORS preflight
+                    .requestMatchers("/", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/users/register", "/api/v1/users/checkRegistMailAddress", "/api/v1/users/checkVerifyCode", "/api/v1/categories/*", "/api/v1/categories/sub-category/*", "/api/v1/sub-categories",  "/api/v1/sub-categories/main-category/*", "/api/v1/sub-categories/*", "/api/v1/main-categories", "/api/v1/products", "/api/v1/products/**", "/uploads/images/**", "/storage/**").permitAll()
                     .anyRequest().authenticated())
                     .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())
                     .authenticationEntryPoint(customAuthenticationEntryPoint))
