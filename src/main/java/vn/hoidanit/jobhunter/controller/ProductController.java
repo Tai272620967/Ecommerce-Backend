@@ -41,26 +41,22 @@ public class ProductController {
     }
 
     @PostMapping("/products")
-    // public ResponseEntity<Product> createProduct(@RequestBody ProductDTO productRequest, @RequestParam("imageFile") MultipartFile imageFile) throws IOException {
-    //     // return ResponseEntity.status(HttpStatus.CREATED).body(this.productService.handleCreateProduct(productRequest));
-    //     return ResponseEntity.ok(this.productService.handleCreateProduct(productRequest, imageFile));
-    // }
     public ResponseEntity<Product> createProduct(
         @RequestParam("name") String name,
         @RequestParam("minPrice") BigDecimal minPrice,
-        @RequestParam("maxPrice") BigDecimal maxPrice,
+        @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
         @RequestParam("description") String description,
         @RequestParam("stockQuantity") Integer stockQuantity,
         @RequestParam("categoryId") Long categoryId,
         @RequestParam("imageFile") MultipartFile imageFile) throws IOException, URISyntaxException {
 
-        // Tạo đối tượng ProductDTO từ các tham số nhận được
+        // Create ProductDTO object from received parameters
         ProductDTO productRequest = new ProductDTO(name, minPrice, maxPrice, description, stockQuantity, categoryId);
 
-        // Gọi service để tạo sản phẩm và upload hình ảnh
+        // Call service to create product and upload image
         Product product = this.productService.handleCreateProduct(productRequest, imageFile);
 
-        // Trả về sản phẩm vừa tạo với mã trạng thái CREATED (201)
+        // Return the created product with CREATED status (201)
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }
 
