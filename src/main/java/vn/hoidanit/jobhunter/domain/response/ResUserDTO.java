@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.hoidanit.jobhunter.util.constant.GenderEnum;
+import vn.hoidanit.jobhunter.util.constant.RoleEnum;
 
 import java.sql.Date;
 import java.time.Instant;
@@ -27,6 +28,7 @@ public class ResUserDTO {
     private Date birthday;
     private String email;
     private GenderEnum gender;
+    private RoleEnum role;
     private Instant createdAt;
     private Instant updatedAt;
 

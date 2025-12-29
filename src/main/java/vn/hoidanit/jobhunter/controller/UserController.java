@@ -39,6 +39,8 @@ import vn.hoidanit.jobhunter.util.anotation.ApiMessage;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 import vn.hoidanit.jobhunter.service.EmailService;
 import vn.hoidanit.jobhunter.service.OtpVerifycationService;
+import vn.hoidanit.jobhunter.util.RoleUtil;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -76,6 +78,11 @@ public class UserController {
     @DeleteMapping("/users/{id}")
     @ApiMessage("Delete a user")
     public ResponseEntity<Void> deleteUser(@PathVariable("id") long id) throws IdInvalidException {
+        // Check if user is admin
+        if (!RoleUtil.isAdmin()) {
+            throw new IdInvalidException("Only admin users can delete users");
+        }
+        
         User currentUser =  this.userService.handleGetUserById(id);
         this.userService.handleDeleteUser(id);
         if (currentUser == null) {
@@ -90,7 +97,11 @@ public class UserController {
     public ResponseEntity<ResultPaginationDTO> getAllUser(
         @Filter Specification<User> spec,
         Pageable pageable
-    ) {
+    ) throws IdInvalidException {
+        // Check if user is admin
+        if (!RoleUtil.isAdmin()) {
+            throw new IdInvalidException("Only admin users can view all users");
+        }
         System.out.println("=== UserController.getAllUser called ===");
         System.out.println("Spec: " + spec);
         System.out.println("Pageable: " + pageable);
@@ -116,6 +127,10 @@ public class UserController {
     @PutMapping("/users")
     @ApiMessage("Update a user")
     public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody User user) throws IdInvalidException {
+        // Check if user is admin
+        if (!RoleUtil.isAdmin()) {
+            throw new IdInvalidException("Only admin users can update users");
+        }
         User updateUser = this.userService.handleUpdateUser(user);
         if (updateUser == null) {
             throw new IdInvalidException("User với id = " + user.getId() + " không tồn tại");

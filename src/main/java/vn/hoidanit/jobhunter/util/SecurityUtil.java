@@ -53,11 +53,25 @@ public class SecurityUtil {
         Instant now = Instant.now();
         Instant validity = now.plus(this.accessTokenExpiration, ChronoUnit.SECONDS);
 
-        // hardcode permission (for testing)
+        // Set permissions based on user role
         List<String> listAuthority = new ArrayList<String>();
-
-        listAuthority.add("ROLE_USER_CREATE");
-        listAuthority.add("ROLE_USER_UPDATE");
+        String userRole = dto != null && dto.getRole() != null ? dto.getRole() : "USER";
+        
+        // Debug: Log role information
+        System.out.println("=== SecurityUtil.createAccessToken Debug ===");
+        System.out.println("DTO: " + (dto != null ? dto.toString() : "NULL"));
+        System.out.println("User role: " + userRole);
+        
+        if ("ADMIN".equals(userRole)) {
+            listAuthority.add("ROLE_ADMIN");
+            listAuthority.add("ROLE_USER_CREATE");
+            listAuthority.add("ROLE_USER_UPDATE");
+            listAuthority.add("ROLE_USER_DELETE");
+            System.out.println("Added ADMIN permissions");
+        } else {
+            listAuthority.add("ROLE_USER");
+            System.out.println("Added USER permissions");
+        }
 
         // @formatter:off
         JwtClaimsSet claims = JwtClaimsSet.builder()
@@ -66,7 +80,11 @@ public class SecurityUtil {
             .subject(email)
             .claim("user", dto)
             .claim("permission", listAuthority)
+            .claim("role", userRole)
             .build();
+        
+        System.out.println("JWT claims role: " + userRole);
+        System.out.println("JWT claims permissions: " + listAuthority);
 
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
         return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();

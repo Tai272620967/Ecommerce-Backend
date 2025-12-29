@@ -11,8 +11,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -21,6 +19,7 @@ import lombok.Getter;
 import lombok.Setter;
 import vn.hoidanit.jobhunter.util.SecurityUtil;
 import vn.hoidanit.jobhunter.util.constant.GenderEnum;
+import vn.hoidanit.jobhunter.util.constant.RoleEnum;
 
 @Entity
 @Table(name = "users")
@@ -50,6 +49,10 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private GenderEnum gender;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private RoleEnum role = RoleEnum.USER; // Default role is USER
 
     @Column(columnDefinition = "MEDIUMTEXT")
     private String refreshToken;
