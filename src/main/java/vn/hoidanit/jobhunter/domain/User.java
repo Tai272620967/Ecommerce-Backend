@@ -62,6 +62,8 @@ public class User {
     private String verifyCode;
     private LocalDateTime codeExpiry;
     
+    private String avatarUrl;
+    
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;

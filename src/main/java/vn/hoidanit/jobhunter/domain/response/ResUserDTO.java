@@ -29,6 +29,7 @@ public class ResUserDTO {
     private String email;
     private GenderEnum gender;
     private RoleEnum role;
+    private String avatarUrl;
     private Instant createdAt;
     private Instant updatedAt;
 
