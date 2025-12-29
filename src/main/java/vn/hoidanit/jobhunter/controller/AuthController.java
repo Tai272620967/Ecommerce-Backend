@@ -24,6 +24,7 @@ import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.util.SecurityUtil;
 import vn.hoidanit.jobhunter.util.anotation.ApiMessage;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
+import vn.hoidanit.jobhunter.util.constant.RoleEnum;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -56,12 +57,25 @@ public class AuthController {
         ResLoginDTO res = new ResLoginDTO();
         User currentUserDB = this.userService.handleGetUserByUsername(loginDto.getUsername());
         if (currentUserDB != null) {
+            // Debug: Log role from database
+            System.out.println("=== AuthController.login Debug ===");
+            System.out.println("User email: " + currentUserDB.getEmail());
+            System.out.println("User role from DB: " + currentUserDB.getRole());
+            System.out.println("User role name: " + (currentUserDB.getRole() != null ? currentUserDB.getRole().name() : "NULL"));
+            
+            String roleName = currentUserDB.getRole() != null ? currentUserDB.getRole().name() : RoleEnum.USER.name();
+            // Use constructor to ensure all fields including role are set
             ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
                 currentUserDB.getId(),
-                currentUserDB.getEmail()
-                // currentUserDB.getName()
+                currentUserDB.getEmail(),
+                roleName
             );
+            System.out.println("UserLogin role: " + userLogin.getRole());
+            System.out.println("UserLogin object: " + userLogin.toString());
+            System.out.println("UserLogin getRole() method: " + userLogin.getRole());
             res.setUser(userLogin);
+            System.out.println("ResLoginDTO user after set: " + res.getUser());
+            System.out.println("ResLoginDTO user role after set: " + (res.getUser() != null ? res.getUser().getRole() : "NULL"));
         }
 
         //create a token
@@ -83,6 +97,15 @@ public class AuthController {
             .maxAge(refreshTokenExpiration)
             .build();
 
+        // Debug: Log final response before returning
+        System.out.println("=== Final ResLoginDTO before return ===");
+        System.out.println("ResLoginDTO user: " + res.getUser());
+        if (res.getUser() != null) {
+            System.out.println("ResLoginDTO user role: " + res.getUser().getRole());
+            System.out.println("ResLoginDTO user id: " + res.getUser().getId());
+            System.out.println("ResLoginDTO user email: " + res.getUser().getEmail());
+        }
+        
         return ResponseEntity
             .ok()
             .header(HttpHeaders.SET_COOKIE, resCookies.toString())
@@ -101,6 +124,7 @@ public class AuthController {
         if (currentUserDB != null) {
             userLogin.setId(currentUserDB.getId());
             userLogin.setEmail(currentUserDB.getEmail());
+            userLogin.setRole(currentUserDB.getRole() != null ? currentUserDB.getRole().name() : RoleEnum.USER.name());
             // userLogin.setName(currentUserDB.getName());
             userGetAccount.setUser(userLogin);
         }
@@ -128,8 +152,8 @@ public class AuthController {
         if (currentUserDB != null) {
             ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
                 currentUserDB.getId(),
-                currentUserDB.getEmail()
-                // currentUserDB.getName()
+                currentUserDB.getEmail(),
+                currentUserDB.getRole() != null ? currentUserDB.getRole().name() : RoleEnum.USER.name()
             );
             res.setUser(userLogin);
         }

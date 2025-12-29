@@ -76,6 +76,15 @@ services:
           else
             echo "Data already exists ($$EXISTING_COUNT main categories). Skipping import."
           fi
+        echo "Checking if admin user exists..."
+        ADMIN_EXISTS=$$(mysql -h mysql -uroot -ppassword jobhunter -sN -e "SELECT COUNT(*) FROM users WHERE email = 'admin@gmail.com';" 2>/dev/null || echo "0")
+        if [ "$$ADMIN_EXISTS" -eq "0" ]; then
+          echo "Admin user not found. Importing admin user..."
+          mysql -h mysql -uroot -ppassword jobhunter < /docker-entrypoint-initdb.d/04-init-admin-user.sql
+          echo "Admin user imported successfully!"
+        else
+          echo "Admin user already exists. Skipping import."
+        fi
     networks:
       - muji-network
 

@@ -93,6 +93,7 @@ public class UserService {
         res.setPhone(user.getPhone());
         res.setBirthday(user.getBirthday());
         res.setGender(user.getGender());
+        res.setRole(user.getRole());
         res.setCreatedAt(user.getCreatedAt());
         res.setUpdatedAt(user.getUpdatedAt());
         return res;
