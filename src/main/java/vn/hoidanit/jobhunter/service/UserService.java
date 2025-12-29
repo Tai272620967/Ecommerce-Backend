@@ -1,13 +1,17 @@
 package vn.hoidanit.jobhunter.service;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.response.ResCreateUserDTO;
@@ -20,9 +24,14 @@ import vn.hoidanit.jobhunter.repository.UserRepositoty;
 public class UserService {
     
     private final UserRepositoty userRepositoty;
+    private final FileService fileService;
+    
+    @Value("${base-uri}")
+    private String baseURI;
 
-    public UserService(UserRepositoty userRepositoty) {
+    public UserService(UserRepositoty userRepositoty, FileService fileService) {
         this.userRepositoty = userRepositoty;
+        this.fileService = fileService;
     }
 
     public User handleCreateUser(User user) {
@@ -94,6 +103,7 @@ public class UserService {
         res.setBirthday(user.getBirthday());
         res.setGender(user.getGender());
         res.setRole(user.getRole());
+        res.setAvatarUrl(user.getAvatarUrl());
         res.setCreatedAt(user.getCreatedAt());
         res.setUpdatedAt(user.getUpdatedAt());
         return res;
@@ -168,6 +178,12 @@ public class UserService {
             currentUser.setLastName(reqUser.getLastName());
             currentUser.setKataFirstName(reqUser.getKataFirstName());
             currentUser.setKataLastName(reqUser.getKataLastName());
+            currentUser.setPhone(reqUser.getPhone());
+            
+            // Update avatarUrl if provided
+            if (reqUser.getAvatarUrl() != null) {
+                currentUser.setAvatarUrl(reqUser.getAvatarUrl());
+            }
 
             // update
             currentUser = this.userRepositoty.save(currentUser);
@@ -185,5 +201,44 @@ public class UserService {
 
     public User getUserByRefreshTokenAndEmail(String token, String email) {
         return this.userRepositoty.findByRefreshTokenAndEmail(token, email);
+    }
+    
+    public User handleUpdateUserWithAvatar(User reqUser, MultipartFile avatarFile) throws IOException, URISyntaxException {
+        User currentUser = this.handleGetUserById(reqUser.getId());
+        if (currentUser != null) {
+            currentUser.setAddress1(reqUser.getAddress1());
+            currentUser.setAddress2(reqUser.getAddress2());
+            currentUser.setAddress3(reqUser.getAddress3());
+            currentUser.setAddress4(reqUser.getAddress4());
+            currentUser.setGender(reqUser.getGender());
+            currentUser.setBirthday(reqUser.getBirthday());
+            currentUser.setFirstName(reqUser.getFirstName());
+            currentUser.setLastName(reqUser.getLastName());
+            currentUser.setKataFirstName(reqUser.getKataFirstName());
+            currentUser.setKataLastName(reqUser.getKataLastName());
+            currentUser.setPhone(reqUser.getPhone());
+            
+            // Upload avatar if provided
+            if (avatarFile != null && !avatarFile.isEmpty()) {
+                String avatarUrl = uploadAvatar(avatarFile);
+                currentUser.setAvatarUrl(avatarUrl);
+            }
+
+            // update
+            currentUser = this.userRepositoty.save(currentUser);
+        }
+        return currentUser;
+    }
+    
+    private String uploadAvatar(MultipartFile avatarFile) throws IOException, URISyntaxException {
+        if (avatarFile == null || avatarFile.isEmpty()) {
+            return null;
+        }
+
+        // Store file in uploads/images/users/ directory
+        String finalName = this.fileService.store(avatarFile, "uploads/images/users");
+
+        // Return URL path to serve image via HTTP endpoint /uploads/images/users/**
+        return "/uploads/images/users/" + finalName;
     }
 }

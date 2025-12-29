@@ -23,6 +23,7 @@ public class ResUpdateUserDTO {
     private Date birthday;
     private String email;
     private GenderEnum gender;
+    private String avatarUrl;
     private Instant createdAt;
     private Instant updatedAt;
 

@@ -22,6 +22,8 @@ import vn.hoidanit.jobhunter.domain.response.ResOrderDTO;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.service.OrderService;
 import vn.hoidanit.jobhunter.util.anotation.ApiMessage;
+import vn.hoidanit.jobhunter.util.RoleUtil;
+import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -44,7 +46,11 @@ public class OrderController {
     @ApiMessage("Get all orders with pagination")
     public ResponseEntity<ResultPaginationDTO> getAllOrders(
         @Filter Specification<Order> spec, Pageable pageable
-    ) {
+    ) throws IdInvalidException {
+        // Check if user is admin - only admin can view all orders
+        if (!RoleUtil.isAdmin()) {
+            throw new IdInvalidException("Only admin users can access this endpoint");
+        }
         return ResponseEntity.ok(this.orderService.handleGetAllOrders(spec, pageable));
     }
 

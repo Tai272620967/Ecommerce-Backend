@@ -41,5 +41,20 @@ public class StaticResourcesWebConfiguration implements WebMvcConfigurer {
         registry.addResourceHandler("/uploads/images/**")
                 .addResourceLocations(fileUri)
                 .setCachePeriod(3600);
+        
+        // Also serve user avatars from uploads/images/users directory
+        String usersImagesPath = workingDir + "/uploads/images/users/";
+        java.nio.file.Path usersAbsolutePath = Paths.get(usersImagesPath).toAbsolutePath();
+        String usersNormalizedPath = usersAbsolutePath.toString().replace("\\", "/");
+        if (!usersNormalizedPath.endsWith("/")) {
+            usersNormalizedPath += "/";
+        }
+        String usersFileUri = "file://" + usersNormalizedPath;
+        
+        System.out.println("StaticResourcesWebConfiguration - Serving user avatars from: " + usersFileUri);
+        
+        registry.addResourceHandler("/uploads/images/users/**")
+                .addResourceLocations(usersFileUri)
+                .setCachePeriod(3600);
     }
 }

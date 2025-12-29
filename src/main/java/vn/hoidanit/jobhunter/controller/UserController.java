@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.turkraft.springfilter.boot.Filter;
 
@@ -40,7 +42,6 @@ import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 import vn.hoidanit.jobhunter.service.EmailService;
 import vn.hoidanit.jobhunter.service.OtpVerifycationService;
 import vn.hoidanit.jobhunter.util.RoleUtil;
-import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -134,6 +135,118 @@ public class UserController {
         User updateUser = this.userService.handleUpdateUser(user);
         if (updateUser == null) {
             throw new IdInvalidException("User với id = " + user.getId() + " không tồn tại");
+        }
+        return ResponseEntity.ok(this.userService.convertToResUpdateUserDTO(updateUser));
+    }
+    
+    @PutMapping("/users/{id}")
+    @ApiMessage("Update a user with avatar")
+    public ResponseEntity<ResUpdateUserDTO> updateUserWithAvatar(
+            @PathVariable("id") long id,
+            @RequestParam(value = "firstName", required = false) String firstName,
+            @RequestParam(value = "lastName", required = false) String lastName,
+            @RequestParam(value = "kataFirstName", required = false) String kataFirstName,
+            @RequestParam(value = "kataLastName", required = false) String kataLastName,
+            @RequestParam(value = "address1", required = false) String address1,
+            @RequestParam(value = "address2", required = false) String address2,
+            @RequestParam(value = "address3", required = false) String address3,
+            @RequestParam(value = "address4", required = false) String address4,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "birthday", required = false) java.sql.Date birthday,
+            @RequestParam(value = "gender", required = false) String gender,
+            @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile
+    ) throws IdInvalidException, java.io.IOException, java.net.URISyntaxException {
+        // Check if user is admin
+        if (!RoleUtil.isAdmin()) {
+            throw new IdInvalidException("Only admin users can update users");
+        }
+        
+        User reqUser = new User();
+        reqUser.setId(id);
+        reqUser.setFirstName(firstName);
+        reqUser.setLastName(lastName);
+        reqUser.setKataFirstName(kataFirstName);
+        reqUser.setKataLastName(kataLastName);
+        reqUser.setAddress1(address1);
+        reqUser.setAddress2(address2);
+        reqUser.setAddress3(address3);
+        reqUser.setAddress4(address4);
+        reqUser.setPhone(phone);
+        reqUser.setBirthday(birthday);
+        if (gender != null) {
+            reqUser.setGender(vn.hoidanit.jobhunter.util.constant.GenderEnum.valueOf(gender.toUpperCase()));
+        }
+        
+        User updateUser = this.userService.handleUpdateUserWithAvatar(reqUser, avatarFile);
+        if (updateUser == null) {
+            throw new IdInvalidException("User với id = " + id + " không tồn tại");
+        }
+        return ResponseEntity.ok(this.userService.convertToResUpdateUserDTO(updateUser));
+    }
+    
+    @GetMapping("/users/me")
+    @ApiMessage("Get current user profile")
+    public ResponseEntity<ResUserDTO> getCurrentUserProfile() throws IdInvalidException {
+        String email = vn.hoidanit.jobhunter.util.SecurityUtil.getCurrentUserLogin().isPresent() 
+            ? vn.hoidanit.jobhunter.util.SecurityUtil.getCurrentUserLogin().get() 
+            : "";
+        if (email.isEmpty()) {
+            throw new IdInvalidException("User not authenticated");
+        }
+        User currentUser = this.userService.handleGetUserByUsername(email);
+        if (currentUser == null) {
+            throw new IdInvalidException("User not found");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(this.userService.convertToResUserDTO(currentUser));
+    }
+    
+    @PutMapping("/users/me")
+    @ApiMessage("Update current user profile")
+    public ResponseEntity<ResUpdateUserDTO> updateCurrentUserProfile(
+            @RequestParam(value = "firstName", required = false) String firstName,
+            @RequestParam(value = "lastName", required = false) String lastName,
+            @RequestParam(value = "kataFirstName", required = false) String kataFirstName,
+            @RequestParam(value = "kataLastName", required = false) String kataLastName,
+            @RequestParam(value = "address1", required = false) String address1,
+            @RequestParam(value = "address2", required = false) String address2,
+            @RequestParam(value = "address3", required = false) String address3,
+            @RequestParam(value = "address4", required = false) String address4,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "birthday", required = false) java.sql.Date birthday,
+            @RequestParam(value = "gender", required = false) String gender,
+            @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile
+    ) throws IdInvalidException, java.io.IOException, java.net.URISyntaxException {
+        String email = vn.hoidanit.jobhunter.util.SecurityUtil.getCurrentUserLogin().isPresent() 
+            ? vn.hoidanit.jobhunter.util.SecurityUtil.getCurrentUserLogin().get() 
+            : "";
+        if (email.isEmpty()) {
+            throw new IdInvalidException("User not authenticated");
+        }
+        
+        User currentUser = this.userService.handleGetUserByUsername(email);
+        if (currentUser == null) {
+            throw new IdInvalidException("User not found");
+        }
+        
+        User reqUser = new User();
+        reqUser.setId(currentUser.getId());
+        reqUser.setFirstName(firstName);
+        reqUser.setLastName(lastName);
+        reqUser.setKataFirstName(kataFirstName);
+        reqUser.setKataLastName(kataLastName);
+        reqUser.setAddress1(address1);
+        reqUser.setAddress2(address2);
+        reqUser.setAddress3(address3);
+        reqUser.setAddress4(address4);
+        reqUser.setPhone(phone);
+        reqUser.setBirthday(birthday);
+        if (gender != null) {
+            reqUser.setGender(vn.hoidanit.jobhunter.util.constant.GenderEnum.valueOf(gender.toUpperCase()));
+        }
+        
+        User updateUser = this.userService.handleUpdateUserWithAvatar(reqUser, avatarFile);
+        if (updateUser == null) {
+            throw new IdInvalidException("Failed to update user");
         }
         return ResponseEntity.ok(this.userService.convertToResUpdateUserDTO(updateUser));
     }
