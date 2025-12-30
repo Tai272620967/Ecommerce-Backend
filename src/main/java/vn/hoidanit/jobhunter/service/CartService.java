@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 import vn.hoidanit.jobhunter.domain.Cart;
 import vn.hoidanit.jobhunter.domain.CartItem;
 import vn.hoidanit.jobhunter.domain.User;
@@ -30,49 +31,48 @@ public class CartService {
         this.userService = userService;
     }
 
+    @Transactional
     public ResAddToCart handleAddToCart(long userId, long productId, int quantity) {
-        System.out.println("userId" + userId + productId + quantity);
         // Kiểm tra giỏ hàng active
         Optional<Cart> cartOptional = this.cartRepository.findByUserIdAndStatus(userId, "active");
         
         // Nếu không có giỏ hàng, tạo giỏ hàng mới
-        Cart cart;
-
-        if (cartOptional.isEmpty()) {
-            System.out.println("new cart");
-            cart = new Cart();
-            cart.setUserId(userId);
-            this.cartRepository.save(cart);
-        } else {
-            cart = cartOptional.get();
-        }
+        Cart cart = cartOptional.orElseGet(() -> {
+            Cart newCart = new Cart();
+            newCart.setUserId(userId);
+            return this.cartRepository.save(newCart);
+        });
 
         // Kiểm tra sản phẩm trong giỏ hàng
         Optional<CartItem> cartItemOptional = this.cartItemRepository.findByCartIdAndProductId(cart.getId(), productId);
 
         // Kiểm tra nếu sản phẩm chưa từng tồn tại trong giỏ hàng
         if (cartItemOptional.isEmpty()) {
+            // Fetch product once
+            var product = this.productRepository.findById(productId)
+                    .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + productId));
+            
             CartItem newCartItem = new CartItem();
             newCartItem.setCart(cart);
-            newCartItem.setProduct(this.productRepository.findById(productId).orElseThrow());
-            newCartItem.setPrice(newCartItem.getProduct().getMinPrice());
-            newCartItem.setQuantity(quantity); // Thêm số lượng cho item mới
+            newCartItem.setProduct(product);
+            newCartItem.setPrice(product.getMinPrice());
+            newCartItem.setQuantity(quantity);
             this.cartItemRepository.save(newCartItem);
         } else {
             // Nếu sản phẩm đã có trong giỏ, cập nhật số lượng
             CartItem cartItem = cartItemOptional.get();
-            cartItemOptional.get().setQuantity(cartItem.getQuantity() + quantity);
+            cartItem.setQuantity(cartItem.getQuantity() + quantity);
             this.cartItemRepository.save(cartItem);
         }
 
         // Tính tổng số lượng sản phẩm trong giỏ hàng
         int totalQuantity = this.cartItemRepository
-        .findAllByCartId(cart.getId())
-        .stream()
-        .mapToInt(CartItem::getQuantity)
-        .sum();
+                .findAllByCartId(cart.getId())
+                .stream()
+                .mapToInt(CartItem::getQuantity)
+                .sum();
 
-        return new ResAddToCart("カートに追加しました", totalQuantity);
+        return new ResAddToCart("Item added to cart successfully", totalQuantity);
     }
 
     public ResCartTotalQuantityDTO handleGetCartTotalQuantity() {
@@ -122,6 +122,7 @@ public class CartService {
         return this.cartItemRepository.findAllByCartId(cart.getId());
     }
 
+    @Transactional
     public CartItem handleUpdateQuantityCartItem(long cartId, long productId, int quantity) {
         Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
         CartItem cartItem = cart.getCartItems().stream()
@@ -138,6 +139,7 @@ public class CartService {
         return cartItem;
     }
 
+    @Transactional
     public void handleDeleteCartItem(long id) {
         if (this.cartItemRepository.existsById(id)) {
             this.cartItemRepository.deleteById(id);

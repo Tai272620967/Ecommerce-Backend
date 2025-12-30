@@ -62,7 +62,7 @@ public class CartController {
     @ApiMessage("delete cart item")
     public ResponseEntity<ApiResponseDTO> deleteCartItem(@PathVariable("id") long id) {
         this.cartService.handleDeleteCartItem(id);
-        return ResponseEntity.ok(new ApiResponseDTO("削除しました"));
+        return ResponseEntity.ok(new ApiResponseDTO("Item deleted successfully"));
     }
     
 }

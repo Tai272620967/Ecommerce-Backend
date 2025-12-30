@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.stream.Collectors;
 
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.response.ResCreateUserDTO;
@@ -134,9 +135,6 @@ public class UserService {
         // Always use findAll without specification to avoid filtering issues
         Page<User> pageUser = this.userRepositoty.findAll(pageable);
         
-        System.out.println("Total users in database: " + pageUser.getTotalElements());
-        System.out.println("Users in current page: " + pageUser.getContent().size());
-        
         ResultPaginationDTO rs = new ResultPaginationDTO();
         ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
         mt.setPage(pageUser.getNumber() + 1);
@@ -146,21 +144,11 @@ public class UserService {
         rs.setMeta(mt);
 
         // Convert users to DTOs
-        List<ResUserDTO> listUser = new java.util.ArrayList<>();
-        for (User user : pageUser.getContent()) {
-            if (user != null) {
-                System.out.println("Processing user - ID: " + user.getId() + ", Email: " + user.getEmail());
-                ResUserDTO dto = convertToResUserDTO(user);
-                if (dto != null) {
-                    System.out.println("Converted DTO - ID: " + dto.getId() + ", Email: " + dto.getEmail());
-                    listUser.add(dto);
-                } else {
-                    System.out.println("DTO is null for user ID: " + user.getId());
-                }
-            }
-        }
-
-        System.out.println("Final list size: " + listUser.size());
+        List<ResUserDTO> listUser = pageUser.getContent().stream()
+                .filter(user -> user != null)
+                .map(this::convertToResUserDTO)
+                .filter(dto -> dto != null)
+                .collect(Collectors.toList());
         rs.setResult(listUser);
         return rs;
     }

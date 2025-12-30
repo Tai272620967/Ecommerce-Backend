@@ -151,6 +151,7 @@ public class OrderService {
         return convertToResOrderDTO(savedOrder, orderItems);
     }
 
+    @Transactional(readOnly = true)
     public List<ResOrderDTO> handleGetOrdersByUserId() {
         String email = SecurityUtil.getCurrentUserLogin().isPresent() ?
                 SecurityUtil.getCurrentUserLogin().get() : "";
@@ -169,6 +170,7 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public ResOrderDTO handleGetOrderById(long orderId) {
         String email = SecurityUtil.getCurrentUserLogin().isPresent() ?
                 SecurityUtil.getCurrentUserLogin().get() : "";
@@ -188,6 +190,7 @@ public class OrderService {
         return convertToResOrderDTO(order, orderItems);
     }
 
+    @Transactional(readOnly = true)
     public ResultPaginationDTO handleGetAllOrders(Specification<Order> spec, Pageable pageable) {
         Page<Order> pageOrder = this.orderRepository.findAll(spec, pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();
@@ -200,11 +203,24 @@ public class OrderService {
 
         rs.setMeta(mt);
 
+        // Fetch all order items in one query to avoid N+1 problem
+        List<Order> orders = pageOrder.getContent();
+        List<Long> orderIds = orders.stream()
+                .map(Order::getId)
+                .collect(Collectors.toList());
+        
+        List<OrderItem> allOrderItems = orderIds.isEmpty() 
+                ? List.of() 
+                : this.orderItemRepository.findByOrderIdIn(orderIds);
+        
+        // Group order items by order ID
+        java.util.Map<Long, List<OrderItem>> orderItemsMap = allOrderItems.stream()
+                .collect(Collectors.groupingBy(item -> item.getOrder().getId()));
+
         // Convert orders to ResOrderDTO
-        List<ResOrderDTO> listOrder = pageOrder.getContent()
-                .stream()
+        List<ResOrderDTO> listOrder = orders.stream()
                 .map(order -> {
-                    List<OrderItem> orderItems = this.orderItemRepository.findByOrderId(order.getId());
+                    List<OrderItem> orderItems = orderItemsMap.getOrDefault(order.getId(), List.of());
                     return convertToResOrderDTO(order, orderItems);
                 })
                 .collect(Collectors.toList());
