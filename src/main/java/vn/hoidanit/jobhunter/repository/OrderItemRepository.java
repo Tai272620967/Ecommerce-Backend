@@ -10,5 +10,6 @@ import vn.hoidanit.jobhunter.domain.OrderItem;
 @Repository
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     List<OrderItem> findByOrderId(long orderId);
+    List<OrderItem> findByOrderIdIn(List<Long> orderIds);
 }
 

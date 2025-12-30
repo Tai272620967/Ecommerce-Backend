@@ -84,8 +84,7 @@ public class UserController {
             throw new IdInvalidException("Only admin users can delete users");
         }
         
-        User currentUser =  this.userService.handleGetUserById(id);
-        this.userService.handleDeleteUser(id);
+        User currentUser = this.userService.handleGetUserById(id);
         if (currentUser == null) {
             throw new IdInvalidException("User với id = " + id + " không tồn tại.");
         }
@@ -103,15 +102,7 @@ public class UserController {
         if (!RoleUtil.isAdmin()) {
             throw new IdInvalidException("Only admin users can view all users");
         }
-        System.out.println("=== UserController.getAllUser called ===");
-        System.out.println("Spec: " + spec);
-        System.out.println("Pageable: " + pageable);
-        
         ResultPaginationDTO result = this.userService.handleGetAllUser(spec, pageable);
-        
-        System.out.println("Result from service - Total: " + (result.getMeta() != null ? result.getMeta().getTotal() : "null"));
-        System.out.println("Result list size: " + (result.getResult() != null ? ((java.util.List<?>) result.getResult()).size() : "null"));
-        
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 

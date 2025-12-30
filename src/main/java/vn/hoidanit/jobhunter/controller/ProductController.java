@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,11 +40,6 @@ public class ProductController {
     public ResponseEntity<ResultPaginationDTO> getAllProduct(
         @Filter Specification<Product> spec, Pageable pageable
     ) {
-        // Debug: log to check if filter is received
-        System.out.println("=== ProductController.getAllProduct Debug ===");
-        System.out.println("Specification: " + (spec != null ? spec.toString() : "null"));
-        System.out.println("Pageable: page=" + pageable.getPageNumber() + ", size=" + pageable.getPageSize());
-        
         return ResponseEntity.ok(this.productService.handleGetAllProduct(spec, pageable));
     }
 
@@ -85,6 +81,27 @@ public class ProductController {
     public ResponseEntity<Product> getProductById(@PathVariable("productId") long productId) {
         Optional<Product> product = this.productService.handleGetProductById(productId);
         return ResponseEntity.ok().body(product.get());
+    }
+
+    @PutMapping("/products/{productId}")
+    public ResponseEntity<Product> updateProduct(
+        @PathVariable("productId") long productId,
+        @RequestParam("name") String name,
+        @RequestParam("minPrice") BigDecimal minPrice,
+        @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
+        @RequestParam("description") String description,
+        @RequestParam("stockQuantity") Integer stockQuantity,
+        @RequestParam("categoryId") Long categoryId,
+        @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) throws IOException, URISyntaxException {
+
+        // Create ProductDTO object from received parameters
+        ProductDTO productRequest = new ProductDTO(name, minPrice, maxPrice, description, stockQuantity, categoryId);
+
+        // Call service to update product and upload image (if provided)
+        Product product = this.productService.handleUpdateProduct(productId, productRequest, imageFile);
+
+        // Return the updated product
+        return ResponseEntity.ok(product);
     }
 
     @DeleteMapping("/products/{productId}")

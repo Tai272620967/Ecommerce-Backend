@@ -46,7 +46,11 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(
                 authz -> authz
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow all OPTIONS requests for CORS preflight
-                    .requestMatchers("/", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/users/register", "/api/v1/users/checkRegistMailAddress", "/api/v1/users/checkVerifyCode", "/api/v1/categories/*", "/api/v1/categories/sub-category/*", "/api/v1/sub-categories",  "/api/v1/sub-categories/main-category/*", "/api/v1/sub-categories/*", "/api/v1/main-categories", "/api/v1/products", "/api/v1/products/**", "/uploads/images/**", "/storage/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/products", "/api/v1/products/**").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/products", "/api/v1/products/**").authenticated()
+                    .requestMatchers(HttpMethod.PUT, "/api/v1/products/**").authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/api/v1/products/**").authenticated()
+                    .requestMatchers("/", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/users/register", "/api/v1/users/checkRegistMailAddress", "/api/v1/users/checkVerifyCode", "/api/v1/categories/*", "/api/v1/categories/sub-category/*", "/api/v1/sub-categories",  "/api/v1/sub-categories/main-category/*", "/api/v1/sub-categories/*", "/api/v1/main-categories", "/uploads/images/**", "/storage/**").permitAll()
                     .anyRequest().authenticated())
                     .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())
                     .authenticationEntryPoint(customAuthenticationEntryPoint))
