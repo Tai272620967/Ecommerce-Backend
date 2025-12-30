@@ -12,7 +12,9 @@ import vn.hoidanit.jobhunter.domain.Product;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
     Page<Product> findAll(Specification<Product> spec, Pageable pageable);
-    Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
+    
+    // Lấy danh sách sản phẩm theo Category ID (cấp 3)
+    Page<Product> findByCategory_Id(Long categoryId, Pageable pageable);
 
     // Lấy danh sách sản phẩm theo SubCategory ID
     Page<Product> findByCategory_SubCategory_Id(Long subCategoryId, Pageable pageable);

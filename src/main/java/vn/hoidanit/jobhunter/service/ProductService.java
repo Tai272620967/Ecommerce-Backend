@@ -110,7 +110,7 @@ public class ProductService {
     }
 
     public ResultPaginationDTO handleGetProductByCategoryId(Long categoryId, Pageable pageable) {
-        Page<Product> pageProduct = this.productRepository.findByCategoryId(categoryId, pageable);
+        Page<Product> pageProduct = this.productRepository.findByCategory_Id(categoryId, pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();
         ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
 
