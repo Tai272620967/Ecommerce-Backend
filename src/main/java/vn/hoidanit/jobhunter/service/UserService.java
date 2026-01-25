@@ -66,8 +66,6 @@ public class UserService {
         res.setEmail(user.getEmail());
         res.setFirstName(user.getFirstName());
         res.setLastName(user.getLastName());
-        res.setKataFirstName(user.getKataFirstName());
-        res.setKataLastName(user.getKataLastName());
         res.setAddress1(user.getAddress1());
         res.setAddress2(user.getAddress2());
         res.setAddress3(user.getAddress3());
@@ -94,8 +92,6 @@ public class UserService {
         res.setEmail(user.getEmail());
         res.setFirstName(user.getFirstName());
         res.setLastName(user.getLastName());
-        res.setKataFirstName(user.getKataFirstName());
-        res.setKataLastName(user.getKataLastName());
         res.setAddress1(user.getAddress1());
         res.setAddress2(user.getAddress2());
         res.setAddress3(user.getAddress3());
@@ -117,8 +113,6 @@ public class UserService {
         res.setEmail(user.getEmail());
         res.setFirstName(user.getFirstName());
         res.setLastName(user.getLastName());
-        res.setKataFirstName(user.getKataFirstName());
-        res.setKataLastName(user.getKataLastName());
         res.setAddress1(user.getAddress1());
         res.setAddress2(user.getAddress2());
         res.setAddress3(user.getAddress3());
@@ -164,8 +158,6 @@ public class UserService {
             currentUser.setBirthday(reqUser.getBirthday());
             currentUser.setFirstName(reqUser.getFirstName());
             currentUser.setLastName(reqUser.getLastName());
-            currentUser.setKataFirstName(reqUser.getKataFirstName());
-            currentUser.setKataLastName(reqUser.getKataLastName());
             currentUser.setPhone(reqUser.getPhone());
             
             // Update avatarUrl if provided
@@ -202,8 +194,6 @@ public class UserService {
             currentUser.setBirthday(reqUser.getBirthday());
             currentUser.setFirstName(reqUser.getFirstName());
             currentUser.setLastName(reqUser.getLastName());
-            currentUser.setKataFirstName(reqUser.getKataFirstName());
-            currentUser.setKataLastName(reqUser.getKataLastName());
             currentUser.setPhone(reqUser.getPhone());
             
             // Upload avatar if provided

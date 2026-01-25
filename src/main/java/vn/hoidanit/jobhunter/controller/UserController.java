@@ -136,8 +136,6 @@ public class UserController {
             @PathVariable("id") long id,
             @RequestParam(value = "firstName", required = false) String firstName,
             @RequestParam(value = "lastName", required = false) String lastName,
-            @RequestParam(value = "kataFirstName", required = false) String kataFirstName,
-            @RequestParam(value = "kataLastName", required = false) String kataLastName,
             @RequestParam(value = "address1", required = false) String address1,
             @RequestParam(value = "address2", required = false) String address2,
             @RequestParam(value = "address3", required = false) String address3,
@@ -156,8 +154,6 @@ public class UserController {
         reqUser.setId(id);
         reqUser.setFirstName(firstName);
         reqUser.setLastName(lastName);
-        reqUser.setKataFirstName(kataFirstName);
-        reqUser.setKataLastName(kataLastName);
         reqUser.setAddress1(address1);
         reqUser.setAddress2(address2);
         reqUser.setAddress3(address3);
@@ -196,8 +192,6 @@ public class UserController {
     public ResponseEntity<ResUpdateUserDTO> updateCurrentUserProfile(
             @RequestParam(value = "firstName", required = false) String firstName,
             @RequestParam(value = "lastName", required = false) String lastName,
-            @RequestParam(value = "kataFirstName", required = false) String kataFirstName,
-            @RequestParam(value = "kataLastName", required = false) String kataLastName,
             @RequestParam(value = "address1", required = false) String address1,
             @RequestParam(value = "address2", required = false) String address2,
             @RequestParam(value = "address3", required = false) String address3,
@@ -223,8 +217,6 @@ public class UserController {
         reqUser.setId(currentUser.getId());
         reqUser.setFirstName(firstName);
         reqUser.setLastName(lastName);
-        reqUser.setKataFirstName(kataFirstName);
-        reqUser.setKataLastName(kataLastName);
         reqUser.setAddress1(address1);
         reqUser.setAddress2(address2);
         reqUser.setAddress3(address3);
