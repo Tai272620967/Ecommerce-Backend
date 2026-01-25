@@ -2,7 +2,6 @@ package vn.hoidanit.jobhunter.domain;
 
 import java.sql.Date;
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -54,11 +53,6 @@ public class User {
 
     @Column(columnDefinition = "MEDIUMTEXT")
     private String refreshToken;
-
-    private Boolean IsEmailVerified = false;
-
-    private String verifyCode;
-    private LocalDateTime codeExpiry;
     
     private String avatarUrl;
     
