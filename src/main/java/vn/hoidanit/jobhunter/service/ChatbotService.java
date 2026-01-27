@@ -108,7 +108,9 @@ public class ChatbotService {
         System.out.println("[CHATBOT] API Key is placeholder: " + (openaiApiKey != null && openaiApiKey.equals("your-openai-api-key-here")));
         
         try {
-            if (openaiApiKey != null && !openaiApiKey.isEmpty() && !openaiApiKey.equals("your-openai-api-key-here")) {
+            if (openaiApiKey != null && !openaiApiKey.isEmpty() && 
+                !openaiApiKey.equals("your-openai-api-key-here") && 
+                !openaiApiKey.equals("YOUR_API_KEY_HERE")) {
                 System.out.println("[CHATBOT] ✅ OpenAI API key is configured");
                 System.out.println("[CHATBOT] 📞 Calling OpenAI API with message: " + message);
                 System.out.println("[CHATBOT] Using model: " + openaiModel);

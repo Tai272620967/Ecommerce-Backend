@@ -107,6 +107,8 @@ services:
       # Enable Spring Boot DevTools for hot reload
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
       SPRING_DEVTOOLS_LIVERELOAD_ENABLED: "true"
+      # OpenAI API Key (set this in your environment or .env file)
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     volumes:
       # Mount source code for hot reload
       - ./src:/hoidanit/jobhunter/src
