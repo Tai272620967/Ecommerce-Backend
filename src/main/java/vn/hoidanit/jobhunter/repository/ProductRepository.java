@@ -1,5 +1,7 @@
 package vn.hoidanit.jobhunter.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -18,4 +20,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     // Lấy danh sách sản phẩm theo SubCategory ID
     Page<Product> findByCategory_SubCategory_Id(Long subCategoryId, Pageable pageable);
+    
+    // Tìm kiếm sản phẩm theo tên (cho chatbot)
+    List<Product> findByNameContainingIgnoreCase(String name);
 }

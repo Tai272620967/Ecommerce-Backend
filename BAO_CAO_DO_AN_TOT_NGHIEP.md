@@ -55,6 +55,7 @@ Dự án bao gồm hai phần chính:
 - **UC07**: Quản lý đơn hàng (Xem lịch sử, Xem chi tiết)
 - **UC08**: Quản lý tài khoản (Xem thông tin, Cập nhật thông tin, Upload avatar)
 - **UC09**: Danh sách yêu thích (Thêm, Xem, Xóa khỏi wishlist)
+- **UC15**: Chatbot hỗ trợ khách hàng (Tư vấn sản phẩm, Tra cứu đơn hàng, Hỗ trợ thông tin)
 
 #### 2.1.3. Use Cases cho ADMIN
 
@@ -256,6 +257,7 @@ src/main/java/vn/hoidanit/jobhunter/
 9. **WishlistController**: Quản lý danh sách yêu thích
 10. **ReviewController**: Quản lý đánh giá sản phẩm
 11. **ImageController**: Xử lý upload và quản lý hình ảnh
+12. **ChatbotController**: Xử lý tin nhắn từ chatbot AI
 
 ### 3.4. Bảo mật và Xác thực
 
@@ -449,6 +451,14 @@ public SecurityFilterChain filterChain(HttpSecurity http) {
 - `GET /api/v1/wishlist`: Lấy danh sách yêu thích
 - `POST /api/v1/wishlist`: Thêm sản phẩm vào wishlist
 - `DELETE /api/v1/wishlist/{productId}`: Xóa sản phẩm khỏi wishlist
+
+#### 3.6.8. Chatbot AI
+- `POST /api/v1/chatbot/message`: Gửi tin nhắn đến chatbot AI và nhận phản hồi
+  - Request body: `{ "message": "string", "conversationId": "string (optional)" }`
+  - Response: `{ "response": "string", "conversationId": "string", "hasProductSuggestion": boolean, "productSuggestionUrl": "string (optional)" }`
+  - **Tích hợp OpenAI GPT API**: Sử dụng OpenAI GPT-3.5-turbo để tạo phản hồi thông minh
+  - **Tìm kiếm sản phẩm**: Tự động tìm kiếm sản phẩm khi người dùng hỏi về sản phẩm
+  - **Fallback mechanism**: Nếu OpenAI API không khả dụng, sử dụng rule-based responses
 
 ### 3.7. Xử lý File Upload - Chi tiết kỹ thuật
 
@@ -822,6 +832,14 @@ axiosInstance.interceptors.response.use(
 - **Accordion**: Accordion component
 - **Table**: Bảng dữ liệu với pagination
 
+#### 3.7.6. Chatbot Component
+- **Chatbot**: Component chatbot AI hỗ trợ khách hàng
+  - Giao diện floating button ở góc dưới bên phải
+  - Chat window với lịch sử tin nhắn
+  - Tích hợp với OpenAI GPT API qua backend
+  - Tự động tìm kiếm và đề xuất sản phẩm
+  - Responsive design cho mobile và desktop
+
 ### 3.8. Styling
 - **SCSS Modules**: Component-scoped styles
 - **Global SCSS**: Styles chung
@@ -1070,6 +1088,13 @@ Hệ thống sử dụng kiến trúc Client-Server với sự tách biệt rõ 
 - Xem danh sách yêu thích
 - Xóa sản phẩm khỏi wishlist
 
+#### 7.1.5. Chatbot hỗ trợ khách hàng (AI Chatbot)
+- Tư vấn sản phẩm thông minh với AI
+- Tra cứu thông tin đơn hàng
+- Hỗ trợ thông tin về giao hàng, thanh toán, đổi trả
+- Tự động tìm kiếm và đề xuất sản phẩm
+- Tích hợp OpenAI GPT API để tạo phản hồi tự nhiên
+
 ### 7.2. Chức năng quản trị viên (Admin)
 
 #### 7.2.1. Dashboard
@@ -1146,7 +1171,7 @@ Dự án đã xây dựng thành công một hệ thống thương mại điện
 - Tích hợp thanh toán trực tuyến (VNPay, PayPal, Stripe)
 - Tích hợp đánh giá và nhận xét sản phẩm
 - Hệ thống khuyến mãi và giảm giá
-- Tích hợp chat hỗ trợ khách hàng
+- Cải thiện chatbot với RAG (Retrieval-Augmented Generation) để truy cập database
 - Tối ưu SEO cho trang web
 - Tích hợp social login (Google, Facebook)
 - Hệ thống thông báo real-time
@@ -1164,13 +1189,15 @@ Qua quá trình phát triển dự án, đã học được và áp dụng:
 - Xử lý form và validation
 - Pagination và filtering
 - Docker và Docker Compose
+- Tích hợp OpenAI GPT API cho chatbot AI
+- Xây dựng component chatbot với React và TypeScript
 
 ### 8.5. Hạn chế và khó khăn
 
 **Hạn chế:**
 - Chưa tích hợp thanh toán trực tuyến
 - Chưa có hệ thống đánh giá và nhận xét sản phẩm đầy đủ
-- Chưa có tính năng chat hỗ trợ khách hàng
+- Chatbot chưa có khả năng truy cập trực tiếp vào database để tra cứu đơn hàng
 - Chưa tối ưu SEO cho trang web
 - Chưa có mobile app
 
